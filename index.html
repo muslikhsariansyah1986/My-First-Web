@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Manajemen Data Pendidikan & Pelatihan</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Header Navigation -->
+    <header class="bg-gradient-to-r from-blue-900 to-indigo-800 text-white shadow-lg sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-white/10 p-2.5 rounded-xl backdrop-blur-md border border-white/20">
+                        <i class="fa-solid font-bold fa-graduation-cap text-2xl text-blue-300"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight tracking-wide">SIFODA DIKLAT KAB.BIMA</h1>
+                        <p class="text-xs text-blue-200">Sistem Informasi dan Data Pendidikan & Pelatihan</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <button onclick="exportToCSV()" class="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-medium rounded-lg transition duration-200 shadow-sm hover:shadow">
+                        <i class="fa-solid fa-file-excel"></i>
+                        <span class="hidden sm:inline">Ekspor CSV</span>
+                    </button>
+                    <button onclick="openModal()" class="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs sm:text-sm font-medium rounded-lg transition duration-200 shadow-sm hover:shadow">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Tambah Data</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+
+        <!-- Stat Cards Section -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <!-- Total Data -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Data</p>
+                    <h3 id="statTotal" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                </div>
+                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                    <i class="fa-solid fa-folder-open text-xl"></i>
+                </div>
+            </div>
+
+            <!-- Pendidikan -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pendidikan</p>
+                    <h3 id="statPendidikan" class="text-2xl font-bold text-indigo-600 mt-1">0</h3>
+                </div>
+                <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+                    <i class="fa-solid fa-user-graduate text-xl"></i>
+                </div>
+            </div>
+
+            <!-- Pelatihan -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pelatihan</p>
+                    <h3 id="statPelatihan" class="text-2xl font-bold text-cyan-600 mt-1">0</h3>
+                </div>
+                <div class="p-3 bg-cyan-50 text-cyan-600 rounded-xl">
+                    <i class="fa-solid fa-certificate text-xl"></i>
+                </div>
+            </div>
+
+            <!-- Total Selesai -->
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Selesai</p>
+                    <h3 id="statSelesai" class="text-2xl font-bold text-emerald-600 mt-1">0</h3>
+                </div>
+                <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                    <i class="fa-solid fa-circle-check text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter, Search & View Controls -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6 space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                
+                <!-- Search Input -->
+                <div class="relative flex-grow max-w-md">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Cari nama, NIP, instansi, atau program..." class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+
+                <!-- Filters & Controls -->
+                <div class="flex flex-wrap items-center gap-3">
+                    
+                    <!-- Jenis Filter -->
+                    <select id="filterJenis" onchange="applyFilters()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Semua">Semua Jenis</option>
+                        <option value="Pendidikan">Pendidikan</option>
+                        <option value="Pelatihan">Pelatihan</option>
+                    </select>
+
+                    <!-- Status Filter -->
+                    <select id="filterStatus" onchange="applyFilters()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Semua">Semua Status</option>
+                        <option value="Selesai">Selesai</option>
+                        <option value="Dalam Proses">Dalam Proses</option>
+                        <option value="Ditunda">Ditunda</option>
+                    </select>
+
+                    <!-- View Toggle -->
+                    <div class="flex border border-slate-300 rounded-lg overflow-hidden bg-slate-100 p-0.5">
+                        <button id="btnViewTable" onclick="toggleView('table')" class="px-3 py-1.5 text-xs font-semibold rounded-md transition duration-150 bg-white shadow-sm text-blue-600">
+                            <i class="fa-solid fa-table-list mr-1"></i> Tabel
+                        </button>
+                        <button id="btnViewGrid" onclick="toggleView('grid')" class="px-3 py-1.5 text-xs font-semibold rounded-md transition duration-150 text-slate-600 hover:text-slate-900">
+                            <i class="fa-solid fa-grip mr-1"></i> Kartu
+                        </button>
+                    </div>
+
+                    <!-- Reset Data Button -->
+                    <button onclick="resetToDummyData()" title="Reset data ke contoh awal" class="p-2 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-100 text-sm transition">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table View -->
+        <div id="tableView" class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-600">
+                    <thead class="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold uppercase text-xs tracking-wider">
+                        <tr>
+                            <th class="px-5 py-3.5">Pegawai / NIP</th>
+                            <th class="px-5 py-3.5">Jenis</th>
+                            <th class="px-5 py-3.5">Program / Jurusan</th>
+                            <th class="px-5 py-3.5">Instansi</th>
+                            <th class="px-5 py-3.5">Periode</th>
+                            <th class="px-5 py-3.5">Status</th>
+                            <th class="px-5 py-3.5 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-200">
+                        <!-- Data dimasukkan via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden p-12 text-center">
+                <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fa-solid fa-folder-open text-2xl"></i>
+                </div>
+                <h4 class="font-semibold text-slate-700 mb-1">Tidak ada data ditemukan</h4>
+                <p class="text-xs text-slate-500">Coba ubah kata kunci pencarian atau filter Anda.</p>
+            </div>
+
+            <!-- Pagination Bar -->
+            <div class="bg-slate-50 px-5 py-3 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+                <div id="paginationInfo">Menampilkan 0 dari 0 data</div>
+                <div class="flex items-center gap-2" id="paginationButtons">
+                    <!-- Tombol Pagination via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid/Card View (Hidden by Default) -->
+        <div id="gridView" class="hidden space-y-6">
+            <div id="gridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Grid Cards dimasukkan via JS -->
+            </div>
+            <!-- Pagination untuk Grid -->
+            <div class="bg-white p-4 border border-slate-200 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+                <div id="paginationInfoGrid">Menampilkan 0 dari 0 data</div>
+                <div class="flex items-center gap-2" id="paginationButtonsGrid">
+                    <!-- Tombol Pagination via JS -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+            &copy; 2026 EduTrain Hub - Sistem Manajemen Data Pendidikan & Pelatihan ASN Kab.Bima.
+        </div>
+    </footer>
+
+    <!-- MODAL FORM (Tambah/Edit) -->
+    <div id="dataModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200 p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all duration-200">
+            
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 rounded-t-2xl sticky top-0 z-10">
+                <h3 id="modalTitle" class="font-bold text-slate-800 text-lg">Tambah Data Baru</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/60 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body / Form -->
+            <form id="entryForm" onsubmit="saveData(event)" class="p-6 space-y-4">
+                <input type="hidden" id="editId">
+
+                <!-- Jenis Data & Status -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Jenis Kegiatan *</label>
+                        <select id="inputJenis" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                            <option value="Pendidikan">Pendidikan</option>
+                            <option value="Pelatihan">Pelatihan</option>
+                            <option value="Pelatihan">Kursus</option>
+                            <option value="Pelatihan">Bimtek</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Status *</label>
+                        <select id="inputStatus" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                            <option value="Selesai">Selesai</option>
+                            <option value="Dalam Proses">Dalam Proses</option>
+                            <option value="Ditunda">Ditunda</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Nama Lengkap & NIP/NIK -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Nama Lengkap *</label>
+                        <input type="text" id="inputNama" required placeholder="Contoh: Budi Santoso, S.Kom." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">NIP / NIK *</label>
+                        <input type="text" id="inputNip" required placeholder="19890123..." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Instansi & Nama Program -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Instansi Penyelenggara *</label>
+                        <input type="text" id="inputInstansi" required placeholder="Contoh: Universitas Indonesia / Digitalent" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Nama Kegiatan *</label>
+                        <input type="text" id="inputProgram" required placeholder="Contoh: S1 Teknik Informatika / Cybersecurity" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Tanggal Mulai, Selesai & Nomor Ijazah -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Tanggal Mulai *</label>
+                        <input type="date" id="inputTglMulai" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Tanggal Selesai</label>
+                        <input type="date" id="inputTglSelesai" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">No. Sertifikat </label>
+                        <input type="text" id="inputSertifikat" placeholder="CERT-2024-XXXX" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Catatan Tambahan -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Catatan / Keterangan Tambahan</label>
+                    <textarea id="inputCatatan" rows="3" placeholder="Tambahkan catatan khusus, nilai, atau akreditasi..." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                </div>
+
+                <!-- Modal Actions -->
+                <div class="pt-4 border-t border-slate-200 flex items-center justify-end gap-3">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100 font-medium transition">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-sm transition">
+                        Simpan Data
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DETAIL -->
+    <div id="detailModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200 p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden transform transition-all duration-200">
+            <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i id="detailIcon" class="text-xl"></i>
+                    <h3 class="font-bold text-lg">Detail Informasi</h3>
+                </div>
+                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-white p-1 rounded-lg transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4 text-sm" id="detailContent">
+                <!-- Data Detail via JS -->
+            </div>
+            <div class="px-6 py-3 bg-slate-50 border-t border-slate-200 text-right">
+                <button onclick="closeDetailModal()" class="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg font-medium text-xs transition">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+
+    <script>
+        // --- DUMMY DATA AWAL ---
+        const initialData = [
+            {
+                id: "EDU-101",
+                jenis: "Pendidikan",
+                nama: "Ahmad Rizky Pratama",
+                nip: "199104122018011001",
+                instansi: "Universitas Gadjah Mada",
+                program: "S2 Magister Manajemen",
+                tglMulai: "2021-08-15",
+                tglSelesai: "2023-07-20",
+                sertifikat: "UGM/MM/2023/8892",
+                status: "Selesai",
+                catatan: "Lulus dengan predikat Cumlaude (IPK 3.88)"
+            },
+            {
+                id: "TRAIN-102",
+                jenis: "Pelatihan",
+                nama: "Siti Rahmawati",
+                nip: "199408222019022003",
+                instansi: "AWS Academy / Braincorps",
+                program: "AWS Certified Solutions Architect",
+                tglMulai: "2024-02-01",
+                tglSelesai: "2024-03-15",
+                sertifikat: "AWS-ARCH-99012",
+                status: "Selesai",
+                catatan: "Pelatihan difasilitasi oleh Divisi IT Perusahaan"
+            },
+            {
+                id: "EDU-103",
+                jenis: "Pendidikan",
+                nama: "Budi Hermawan",
+                nip: "198811052015031002",
+                instansi: "Institut Teknologi Bandung",
+                program: "S1 Teknik Informatika",
+                tglMulai: "2010-08-01",
+                tglSelesai: "2014-06-18",
+                sertifikat: "ITB/STEI/2014/1042",
+                status: "Selesai",
+                catatan: "Beasiswa Ikatan Dinas"
+            },
+            {
+                id: "TRAIN-104",
+                jenis: "Pelatihan",
+                nama: "Dewi Anggraini",
+                nip: "199605142020122005",
+                instansi: "Project Management Institute (PMI)",
+                program: "PMP (Project Management Professional)",
+                tglMulai: "2024-09-01",
+                tglSelesai: "2024-12-01",
+                sertifikat: "-",
+                status: "Dalam Proses",
+                catatan: "Sedang menyelesaikan modul tingkat lanjut"
+            },
+            {
+                id: "TRAIN-105",
+                jenis: "Pelatihan",
+                nama: "Eko Prasetyo",
+                nip: "199302192019011004",
+                instansi: "Cybersecurity Indonesia Academy",
+                program: "Certified Ethical Hacker (CEH)",
+                tglMulai: "2024-05-10",
+                tglSelesai: "2024-06-10",
+                sertifikat: "CEH-ID-8821",
+                status: "Ditunda",
+                catatan: "Ditunda karena tugas dinas luar kota"
+            }
+        ];
+
+        // Global State Variables
+        let items = [];
+        let filteredItems = [];
+        let currentPage = 1;
+        const itemsPerPage = 5;
+        let currentView = 'table';
+
+        // Load & Initialize
+        window.onload = function() {
+            const stored = localStorage.getItem('edutrain_data');
+            if (stored) {
+                try { items = JSON.parse(stored); } catch (e) { items = initialData; }
+            } else {
+                items = [...initialData];
+                saveToLocalStorage();
+            }
+            applyFilters();
+        };
+
+        function saveToLocalStorage() {
+            localStorage.setItem('edutrain_data', JSON.stringify(items));
+        }
+
+        function resetToDummyData() {
+            if (confirm("Apakah Anda yakin ingin mengembalikan data ke contoh awal? Semua perubahan akan direset.")) {
+                items = [...initialData];
+                saveToLocalStorage();
+                applyFilters();
+                showToast("Data berhasil direset ke sampel awal", "info");
+            }
+        }
+
+        // Filter and Search Logic
+        function applyFilters() {
+            const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+            const jenisFilter = document.getElementById('filterJenis').value;
+            const statusFilter = document.getElementById('filterStatus').value;
+
+            filteredItems = items.filter(item => {
+                const matchKeyword = 
+                    item.nama.toLowerCase().includes(keyword) ||
+                    item.nip.toLowerCase().includes(keyword) ||
+                    item.instansi.toLowerCase().includes(keyword) ||
+                    item.program.toLowerCase().includes(keyword) ||
+                    (item.sertifikat && item.sertifikat.toLowerCase().includes(keyword));
+
+                const matchJenis = jenisFilter === 'Semua' || item.jenis === jenisFilter;
+                const matchStatus = statusFilter === 'Semua' || item.status === statusFilter;
+
+                return matchKeyword && matchJenis && matchStatus;
+            });
+
+            currentPage = 1;
+            updateStats();
+            render();
+        }
+
+        function handleSearch() {
+            applyFilters();
+        }
+
+        // Stats Update
+        function updateStats() {
+            document.getElementById('statTotal').innerText = items.length;
+            document.getElementById('statPendidikan').innerText = items.filter(i => i.jenis === 'Pendidikan').length;
+            document.getElementById('statPelatihan').innerText = items.filter(i => i.jenis === 'Pelatihan').length;
+            document.getElementById('statSelesai').innerText = items.filter(i => i.status === 'Selesai').length;
+        }
+
+        // Rendering Functions
+        function render() {
+            if (currentView === 'table') {
+                renderTable();
+            } else {
+                renderGrid();
+            }
+        }
+
+        function getPaginatedData() {
+            const start = (currentPage - 1) * itemsPerPage;
+            return filteredItems.slice(start, start + itemsPerPage);
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            const emptyState = document.getElementById('emptyState');
+            tbody.innerHTML = '';
+
+            const pageData = getPaginatedData();
+
+            if (pageData.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                pageData.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50/80 transition duration-150";
+
+                    // Badge status
+                    let statusBadge = getStatusBadge(item.status);
+                    let jenisBadge = item.jenis === 'Pendidikan' 
+                        ? `<span class="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full font-medium bg-indigo-50 text-indigo-700 border border-indigo-200"><i class="fa-solid fa-graduation-cap text-[10px]"></i> Pendidikan</span>`
+                        : `<span class="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full font-medium bg-cyan-50 text-cyan-700 border border-cyan-200"><i class="fa-solid fa-certificate text-[10px]"></i> Pelatihan</span>`;
+
+                    tr.innerHTML = `
+                        <td class="px-5 py-4">
+                            <div class="font-semibold text-slate-800">${escapeHtml(item.nama)}</div>
+                            <div class="text-xs text-slate-400 font-mono">NIP: ${escapeHtml(item.nip)}</div>
+                        </td>
+                        <td class="px-5 py-4 whitespace-nowrap">${jenisBadge}</td>
+                        <td class="px-5 py-4">
+                            <div class="font-medium text-slate-700">${escapeHtml(item.program)}</div>
+                            <div class="text-xs text-slate-400">${item.sertifikat ? 'No: ' + escapeHtml(item.sertifikat) : '-'}</div>
+                        </td>
+                        <td class="px-5 py-4 text-slate-600">${escapeHtml(item.instansi)}</td>
+                        <td class="px-5 py-4 whitespace-nowrap text-xs text-slate-500">
+                            <div>${formatDate(item.tglMulai)}</div>
+                            <div class="text-slate-400">s/d ${item.tglSelesai ? formatDate(item.tglSelesai) : 'Sekarang'}</div>
+                        </td>
+                        <td class="px-5 py-4 whitespace-nowrap">${statusBadge}</td>
+                        <td class="px-5 py-4 whitespace-nowrap text-center">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <button onclick="viewDetail('${item.id}')" title="Detail" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <button onclick="editData('${item.id}')" title="Edit" class="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button onclick="deleteData('${item.id}')" title="Hapus" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            renderPaginationControls('paginationInfo', 'paginationButtons');
+        }
+
+        function renderGrid() {
+            const container = document.getElementById('gridContainer');
+            container.innerHTML = '';
+            const pageData = getPaginatedData();
+
+            if (pageData.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full p-12 text-center bg-white border border-slate-200 rounded-xl">
+                        <i class="fa-solid fa-folder-open text-3xl text-slate-300 mb-2"></i>
+                        <h4 class="font-semibold text-slate-700">Tidak ada data ditemukan</h4>
+                    </div>
+                `;
+            } else {
+                pageData.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = "bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between";
+
+                    let jenisClass = item.jenis === 'Pendidikan' ? 'text-indigo-600 bg-indigo-50' : 'text-cyan-600 bg-cyan-50';
+                    let iconJenis = item.jenis === 'Pendidikan' ? 'fa-graduation-cap' : 'fa-certificate';
+
+                    card.innerHTML = `
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-1 text-xs font-semibold rounded-lg ${jenisClass} flex items-center gap-1.5">
+                                    <i class="fa-solid ${iconJenis}"></i> ${item.jenis}
+                                </span>
+                                ${getStatusBadge(item.status)}
+                            </div>
+                            <h3 class="font-bold text-slate-800 text-base mb-0.5">${escapeHtml(item.nama)}</h3>
+                            <p class="text-xs text-slate-400 font-mono mb-3">NIP: ${escapeHtml(item.nip)}</p>
+                            
+                            <div class="space-y-2 border-t border-slate-100 pt-3 text-xs">
+                                <div>
+                                    <span class="text-slate-400 block">Program/Jurusan:</span>
+                                    <span class="font-semibold text-slate-700">${escapeHtml(item.program)}</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block">Instansi:</span>
+                                    <span class="text-slate-600">${escapeHtml(item.instansi)}</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block">Periode:</span>
+                                    <span class="text-slate-600">${formatDate(item.tglMulai)} - ${item.tglSelesai ? formatDate(item.tglSelesai) : 'Sekarang'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                            <span class="text-slate-400 truncate max-w-[150px]"><i class="fa-solid fa-ribbon mr-1"></i>${item.sertifikat ? escapeHtml(item.sertifikat) : 'Tanpa Sertifikat'}</span>
+                            <div class="flex items-center gap-1">
+                                <button onclick="viewDetail('${item.id}')" class="p-1.5 text-slate-500 hover:text-blue-600 rounded">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <button onclick="editData('${item.id}')" class="p-1.5 text-slate-500 hover:text-indigo-600 rounded">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button onclick="deleteData('${item.id}')" class="p-1.5 text-slate-500 hover:text-rose-600 rounded">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            renderPaginationControls('paginationInfoGrid', 'paginationButtonsGrid');
+        }
+
+        // Pagination Generator
+        function renderPaginationControls(infoId, btnContainerId) {
+            const info = document.getElementById(infoId);
+            const btnContainer = document.getElementById(btnContainerId);
+            const total = filteredItems.length;
+            const totalPages = Math.ceil(total / itemsPerPage) || 1;
+
+            const startIdx = total === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+            const endIdx = Math.min(currentPage * itemsPerPage, total);
+
+            info.innerText = `Menampilkan ${startIdx}-${endIdx} dari ${total} data`;
+            btnContainer.innerHTML = '';
+
+            // Prev Button
+            const prevBtn = document.createElement('button');
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.className = `px-2.5 py-1.5 rounded-lg border border-slate-200 font-medium ${currentPage === 1 ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-100'}`;
+            prevBtn.innerHTML = `<i class="fa-solid fa-chevron-left"></i>`;
+            prevBtn.onclick = () => { currentPage--; render(); };
+            btnContainer.appendChild(prevBtn);
+
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const pBtn = document.createElement('button');
+                pBtn.className = `px-3 py-1.5 rounded-lg font-medium text-xs ${i === currentPage ? 'bg-blue-600 text-white' : 'border border-slate-200 text-slate-600 hover:bg-slate-100'}`;
+                pBtn.innerText = i;
+                pBtn.onclick = () => { currentPage = i; render(); };
+                btnContainer.appendChild(pBtn);
+            }
+
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+            nextBtn.className = `px-2.5 py-1.5 rounded-lg border border-slate-200 font-medium ${currentPage === totalPages || totalPages === 0 ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-100'}`;
+            nextBtn.innerHTML = `<i class="fa-solid fa-chevron-right"></i>`;
+            nextBtn.onclick = () => { currentPage++; render(); };
+            btnContainer.appendChild(nextBtn);
+        }
+
+        // View Toggle Function
+        function toggleView(view) {
+            currentView = view;
+            const tableEl = document.getElementById('tableView');
+            const gridEl = document.getElementById('gridView');
+            const btnTable = document.getElementById('btnViewTable');
+            const btnGrid = document.getElementById('btnViewGrid');
+
+            if (view === 'table') {
+                tableEl.classList.remove('hidden');
+                gridEl.classList.add('hidden');
+                btnTable.className = "px-3 py-1.5 text-xs font-semibold rounded-md transition duration-150 bg-white shadow-sm text-blue-600";
+                btnGrid.className = "px-3 py-1.5 text-xs font-semibold rounded-md transition duration-150 text-slate-600 hover:text-slate-900";
+            } else {
+                tableEl.classList.add('hidden');
+                gridEl.classList.remove('hidden');
+                btnGrid.className = "px-3 py-1.5 text-xs font-semibold rounded-md transition duration-150 bg-white shadow-sm text-blue-600";
+                btnTable.className = "px-3 py-1.5 text-xs font-semibold rounded-md transition duration-150 text-slate-600 hover:text-slate-900";
+            }
+            render();
+        }
+
+        // Helper Status Badge
+        function getStatusBadge(status) {
+            switch (status) {
+                case 'Selesai':
+                    return `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Selesai</span>`;
+                case 'Dalam Proses':
+                    return `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Dalam Proses</span>`;
+                case 'Ditunda':
+                    return `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Ditunda</span>`;
+                default:
+                    return `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-600">${status}</span>`;
+            }
+        }
+
+        // Modal Handlers
+        function openModal(isEdit = false) {
+            const modal = document.getElementById('dataModal');
+            document.getElementById('modalTitle').innerText = isEdit ? "Edit Data Pendidikan / Pelatihan" : "Tambah Data Baru";
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('dataModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.getElementById('entryForm').reset();
+                document.getElementById('editId').value = '';
+            }, 200);
+        }
+
+        // CRUD Operations
+        function saveData(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editId').value;
+
+            const newItem = {
+                id: editId ? editId : 'ID-' + Date.now(),
+                jenis: document.getElementById('inputJenis').value,
+                nama: document.getElementById('inputNama').value,
+                nip: document.getElementById('inputNip').value,
+                instansi: document.getElementById('inputInstansi').value,
+                program: document.getElementById('inputProgram').value,
+                tglMulai: document.getElementById('inputTglMulai').value,
+                tglSelesai: document.getElementById('inputTglSelesai').value,
+                sertifikat: document.getElementById('inputSertifikat').value,
+                status: document.getElementById('inputStatus').value,
+                catatan: document.getElementById('inputCatatan').value
+            };
+
+            if (editId) {
+                const idx = items.findIndex(i => i.id === editId);
+                if (idx !== -1) items[idx] = newItem;
+                showToast("Data berhasil diperbarui!", "success");
+            } else {
+                items.unshift(newItem);
+                showToast("Data baru berhasil disimpan!", "success");
+            }
+
+            saveToLocalStorage();
+            applyFilters();
+            closeModal();
+        }
+
+        function editData(id) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+
+            document.getElementById('editId').value = item.id;
+            document.getElementById('inputJenis').value = item.jenis;
+            document.getElementById('inputNama').value = item.nama;
+            document.getElementById('inputNip').value = item.nip;
+            document.getElementById('inputInstansi').value = item.instansi;
+            document.getElementById('inputProgram').value = item.program;
+            document.getElementById('inputTglMulai').value = item.tglMulai;
+            document.getElementById('inputTglSelesai').value = item.tglSelesai || '';
+            document.getElementById('inputSertifikat').value = item.sertifikat || '';
+            document.getElementById('inputStatus').value = item.status;
+            document.getElementById('inputCatatan').value = item.catatan || '';
+
+            openModal(true);
+        }
+
+        function deleteData(id) {
+            if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
+                items = items.filter(i => i.id !== id);
+                saveToLocalStorage();
+                applyFilters();
+                showToast("Data berhasil dihapus.", "danger");
+            }
+        }
+
+        function viewDetail(id) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+
+            const iconEl = document.getElementById('detailIcon');
+            iconEl.className = item.jenis === 'Pendidikan' ? "fa-solid fa-graduation-cap text-indigo-400" : "fa-solid fa-certificate text-cyan-400";
+
+            const detailContent = document.getElementById('detailContent');
+            detailContent.innerHTML = `
+                <div class="border-b border-slate-100 pb-3">
+                    <span class="text-xs text-slate-400 uppercase font-semibold">Pegawai</span>
+                    <h4 class="font-bold text-slate-800 text-base">${escapeHtml(item.nama)}</h4>
+                    <p class="text-xs text-slate-500 font-mono">NIP / NIK: ${escapeHtml(item.nip)}</p>
+                </div>
+                <div class="grid grid-cols-2 gap-3 border-b border-slate-100 pb-3">
+                    <div>
+                        <span class="text-xs text-slate-400 block">Jenis Kegiatan</span>
+                        <span class="font-semibold text-slate-700">${item.jenis}</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 block">Status</span>
+                        <span class="mt-0.5 inline-block">${getStatusBadge(item.status)}</span>
+                    </div>
+                </div>
+                <div class="space-y-2 border-b border-slate-100 pb-3">
+                    <div>
+                        <span class="text-xs text-slate-400 block">Program / Jurusan</span>
+                        <span class="font-medium text-slate-800">${escapeHtml(item.program)}</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 block">Lembaga / Instansi</span>
+                        <span class="text-slate-700">${escapeHtml(item.instansi)}</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 border-b border-slate-100 pb-3">
+                    <div>
+                        <span class="text-xs text-slate-400 block">Tanggal Mulai</span>
+                        <span class="text-slate-700">${formatDate(item.tglMulai)}</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 block">Tanggal Selesai</span>
+                        <span class="text-slate-700">${item.tglSelesai ? formatDate(item.tglSelesai) : '-'}</span>
+                    </div>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-400 block">No. Sertifikat / Ijazah</span>
+                    <span class="font-mono text-slate-700">${item.sertifikat ? escapeHtml(item.sertifikat) : '-'}</span>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-400 block">Catatan / Keterangan</span>
+                    <p class="text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-200 mt-1 text-xs italic">${item.catatan ? escapeHtml(item.catatan) : 'Tidak ada catatan.'}</p>
+                </div>
+            `;
+
+            const modal = document.getElementById('detailModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        }
+
+        function closeDetailModal() {
+            const modal = document.getElementById('detailModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 200);
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            if (filteredItems.length === 0) {
+                showToast("Tidak ada data untuk diekspor", "warning");
+                return;
+            }
+
+            const headers = ["ID", "Jenis", "Nama Lengkap", "NIP/NIK", "Instansi", "Program/Jurusan", "Tanggal Mulai", "Tanggal Selesai", "No Sertifikat", "Status", "Catatan"];
+            
+            const csvRows = [
+                headers.join(','),
+                ...filteredItems.map(item => [
+                    `"${item.id}"`,
+                    `"${item.jenis}"`,
+                    `"${item.nama.replace(/"/g, '""')}"`,
+                    `"${item.nip}"`,
+                    `"${item.instansi.replace(/"/g, '""')}"`,
+                    `"${item.program.replace(/"/g, '""')}"`,
+                    `"${item.tglMulai}"`,
+                    `"${item.tglSelesai || ''}"`,
+                    `"${(item.sertifikat || '').replace(/"/g, '""')}"`,
+                    `"${item.status}"`,
+                    `"${(item.catatan || '').replace(/"/g, '""')}"`
+                ].join(','))
+            ];
+
+            const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + csvRows.join('\n');
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', `EduTrain_Data_${new Date().toISOString().slice(0, 10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast("Data berhasil diekspor ke CSV", "success");
+        }
+
+        // Utilities
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            if (isNaN(date)) return dateStr;
+            return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+
+            let bg = 'bg-slate-800';
+            let icon = 'fa-circle-info';
+
+            if (type === 'success') { bg = 'bg-emerald-600'; icon = 'fa-circle-check'; }
+            if (type === 'danger') { bg = 'bg-rose-600'; icon = 'fa-circle-xmark'; }
+            if (type === 'warning') { bg = 'bg-amber-600'; icon = 'fa-triangle-exclamation'; }
+
+            toast.className = `${bg} text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 text-xs sm:text-sm transform transition duration-300 opacity-0 translate-y-2`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icon}"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-y-2');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
